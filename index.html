@@ -131,6 +131,30 @@
   .page-btn:hover, .page-btn.active { background: var(--accent); border-color: var(--accent); color: #fff; }
   .page-info { color: var(--text2); font-size: 12px; }
 
+  /* Ads Swipe cards */
+  .ads-controls { display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 20px; align-items: center; }
+  .ads-controls input { background: var(--bg2); border: 1px solid var(--border); color: var(--text); padding: 8px 12px; border-radius: 8px; font-size: 13px; flex: 1; min-width: 200px; outline: none; }
+  .ads-controls input:focus { border-color: var(--accent); }
+  .ads-controls select { background: var(--bg2); border: 1px solid var(--border); color: var(--text); padding: 8px 12px; border-radius: 8px; font-size: 13px; outline: none; cursor: pointer; }
+  .ads-controls label { color: var(--text2); font-size: 12px; display: flex; align-items: center; gap: 8px; }
+  .ads-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 16px; }
+  .ad-card { background: var(--bg2); border: 1px solid var(--border); border-radius: 12px; overflow: hidden; transition: transform .15s, border-color .15s; }
+  .ad-card:hover { transform: translateY(-2px); border-color: var(--accent); }
+  .ad-card-header { padding: 14px 16px; display: flex; align-items: center; gap: 10px; border-bottom: 1px solid var(--border); }
+  .ad-avatar { width: 38px; height: 38px; border-radius: 50%; background: var(--bg3); border: 2px solid var(--border); display: flex; align-items: center; justify-content: center; font-size: 16px; flex-shrink: 0; overflow: hidden; }
+  .ad-avatar img { width: 100%; height: 100%; object-fit: cover; }
+  .ad-page-name { font-weight: 700; font-size: 13px; flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .ad-temp-badge { font-size: 11px; font-weight: 700; padding: 2px 8px; border-radius: 20px; flex-shrink: 0; }
+  .ad-card-body { padding: 14px 16px; }
+  .ad-stat-row { display: flex; gap: 16px; margin-bottom: 10px; }
+  .ad-stat { display: flex; flex-direction: column; gap: 2px; }
+  .ad-stat-label { font-size: 10px; color: var(--text2); text-transform: uppercase; letter-spacing: 0.5px; }
+  .ad-stat-value { font-size: 15px; font-weight: 700; }
+  .ad-card-footer { padding: 10px 16px; border-top: 1px solid var(--border); display: flex; gap: 8px; }
+  .ad-btn { flex: 1; padding: 6px 10px; border-radius: 6px; border: 1px solid var(--border); background: var(--bg3); color: var(--text2); cursor: pointer; font-size: 11px; font-weight: 600; text-decoration: none; text-align: center; transition: all .15s; }
+  .ad-btn:hover { border-color: var(--accent); color: var(--accent); }
+  .ads-summary { color: var(--text2); font-size: 12px; margin-bottom: 12px; }
+
   /* Scroll */
   ::-webkit-scrollbar { width: 6px; height: 6px; }
   ::-webkit-scrollbar-track { background: var(--bg); }
@@ -157,6 +181,7 @@
   <div class="tab" data-tab="niches">Nichos</div>
   <div class="tab" data-tab="clickup">ClickUp Spy</div>
   <div class="tab" data-tab="native">Native Swipe</div>
+  <div class="tab" data-tab="ads">Ads Swipe</div>
 </div>
 
 <main>
@@ -258,6 +283,25 @@
       </select>
     </div>
     <div class="products-grid" id="native-grid"></div>
+  </div>
+
+
+  <!-- ADS SWIPE -->
+  <div class="tab-panel" id="tab-ads">
+    <div class="ads-controls">
+      <input type="text" id="ads-search" placeholder="Buscar página anunciante..." />
+      <select id="ads-sort">
+        <option value="creativeCount">Ordenar: Mais Criativos</option>
+        <option value="daysActive">Ordenar: Mais Dias Ativo</option>
+        <option value="startDate">Ordenar: Mais Recente</option>
+        <option value="pageName">Ordenar: Nome A-Z</option>
+      </select>
+      <label>Mín. criativos: <strong id="ads-slider-val">0</strong>
+        <input type="range" id="ads-slider" min="0" max="500" value="0" step="10" style="width:120px">
+      </label>
+    </div>
+    <div class="ads-summary" id="ads-summary"></div>
+    <div class="ads-grid" id="ads-grid"></div>
   </div>
 
 </main>
@@ -662,6 +706,101 @@
   }
 
   renderNativeGrid();
+
+  // ─── ADS SWIPE ────────────────────────────────────────────
+  let adsData = [];
+  let adsFiltered = [];
+  let adsSort = 'creativeCount';
+  let adsMinCreatives = 0;
+
+  fetch('data_ads.json')
+    .then(r => r.json())
+    .then(data => {
+      adsData = data;
+      filterAds();
+    })
+    .catch(() => {
+      document.getElementById('ads-grid').innerHTML = '<div class="empty">Erro ao carregar dados. Rode o scraper primeiro.</div>';
+    });
+
+  function tempBadge(count) {
+    if (count >= 500) return { label: '🔥 Hot', bg: '#ff450022', color: '#ff6600', border: '#ff450044' };
+    if (count >= 200) return { label: '⚡ Warm', bg: '#ff990022', color: '#ff9900', border: '#ff990044' };
+    return { label: '✅ Active', bg: '#22c55e22', color: '#22c55e', border: '#22c55e44' };
+  }
+
+  function filterAds() {
+    const q = document.getElementById('ads-search').value.toLowerCase();
+    adsFiltered = adsData.filter(ad => {
+      if (ad.creativeCount < adsMinCreatives) return false;
+      if (q && !ad.pageName.toLowerCase().includes(q)) return false;
+      return true;
+    });
+    sortAndRenderAds();
+  }
+
+  function sortAndRenderAds() {
+    adsFiltered.sort((a, b) => {
+      if (adsSort === 'pageName') return a.pageName.localeCompare(b.pageName);
+      if (adsSort === 'startDate') return new Date(b.startDate || 0) - new Date(a.startDate || 0);
+      return (b[adsSort] || 0) - (a[adsSort] || 0);
+    });
+
+    const grid = document.getElementById('ads-grid');
+    grid.innerHTML = '';
+    document.getElementById('ads-summary').textContent = `${adsFiltered.length} anúncio${adsFiltered.length !== 1 ? 's' : ''} encontrado${adsFiltered.length !== 1 ? 's' : ''}`;
+
+    if (!adsFiltered.length) {
+      grid.innerHTML = '<div class="empty">Nenhum anúncio encontrado</div>';
+      return;
+    }
+
+    adsFiltered.forEach(ad => {
+      const temp = tempBadge(ad.creativeCount);
+      const card = document.createElement('div');
+      card.className = 'ad-card';
+      const avatarContent = ad.avatarUrl
+        ? `<img src="${ad.avatarUrl}" alt="">`
+        : (ad.pageName ? ad.pageName[0].toUpperCase() : '?');
+
+      card.innerHTML = `
+        <div class="ad-card-header">
+          <div class="ad-avatar">${ad.avatarUrl ? `<img src="${ad.avatarUrl}" alt="">` : (ad.pageName ? ad.pageName[0].toUpperCase() : '?')}</div>
+          <div class="ad-page-name">${ad.pageName || '—'}</div>
+          <div class="ad-temp-badge" style="background:${temp.bg};color:${temp.color};border:1px solid ${temp.border}">${temp.label}</div>
+        </div>
+        <div class="ad-card-body">
+          <div class="ad-stat-row">
+            <div class="ad-stat">
+              <span class="ad-stat-label">Criativos</span>
+              <span class="ad-stat-value" style="color:var(--accent)">${ad.creativeCount ?? '—'}</span>
+            </div>
+            <div class="ad-stat">
+              <span class="ad-stat-label">Dias Ativo</span>
+              <span class="ad-stat-value" style="color:var(--green)">${ad.daysActive ?? '—'}</span>
+            </div>
+            <div class="ad-stat">
+              <span class="ad-stat-label">Início</span>
+              <span class="ad-stat-value" style="font-size:12px;color:var(--text2)">${ad.startDate ? fmtDate(ad.startDate) : '—'}</span>
+            </div>
+          </div>
+        </div>
+        <div class="ad-card-footer">
+          <a class="ad-btn" href="${ad.adUrl}" target="_blank">Ver no Facebook</a>
+          <button class="ad-btn" onclick="navigator.clipboard.writeText('${ad.libraryId}');this.textContent='Copiado!';setTimeout(()=>this.textContent='Copy ID',1500)">Copy ID</button>
+        </div>
+      `;
+      grid.appendChild(card);
+    });
+  }
+
+  document.getElementById('ads-search').addEventListener('input', filterAds);
+  document.getElementById('ads-sort').addEventListener('change', e => { adsSort = e.target.value; sortAndRenderAds(); });
+  document.getElementById('ads-slider').addEventListener('input', e => {
+    adsMinCreatives = +e.target.value;
+    document.getElementById('ads-slider-val').textContent = adsMinCreatives;
+    filterAds();
+  });
 
 })();
 </script>
