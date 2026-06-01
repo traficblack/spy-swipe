@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Spy Swipe — Intelligence Dashboard</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Cormorant+Garamond:ital,wght@0,300;1,300&display=swap" rel="stylesheet">
 <style>
   :root {
     --bg:      #050508;
@@ -53,33 +53,89 @@
   /* ── Hero section ── */
   .hero {
     position: relative;
-    min-height: 420px;
+    min-height: 100vh;
     display: flex;
     flex-direction: column;
     align-items: center;
-    justify-content: center;
+    justify-content: flex-start;
     text-align: center;
-    padding: 80px 40px 60px;
-    overflow: hidden;
+    padding: 14vh 40px 40px;
+    overflow: visible;
   }
-  .hero::before {
-    content: '';
-    position: absolute;
-    top: -120px; left: 50%;
-    transform: translateX(-50%);
-    width: 900px; height: 500px;
-    background: radial-gradient(ellipse at 50% 0%, rgba(139,92,246,0.45) 0%, rgba(109,40,217,0.2) 35%, transparent 70%);
+  .hero-stats-glow { display: none; }
+
+  .hero-block-title { margin-bottom: 50px; }
+
+  /* Seletor de período */
+  .period-selector {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 4px;
+    margin-top: 56px;
+  }
+  .period-btn {
+    cursor: pointer;
+    font-size: 10px;
+    font-weight: 300;
+    letter-spacing: 1.4px;
+    text-transform: uppercase;
+    color: rgba(255,255,255,0.28);
+    padding: 8px 18px;
+    border: none;
+    background: transparent;
+    transition: all .25s ease;
+    transform: scale(1);
+  }
+  .period-btn:hover {
+    color: rgba(255,255,255,0.75);
+    transform: scale(1.1);
+  }
+  .period-btn.active {
+    color: #fff;
+    font-size: 11px;
+    font-weight: 400;
+    transform: scale(1.18);
+    letter-spacing: 2px;
+    animation: periodPulse .35s cubic-bezier(.4,0,.2,1);
+  }
+  @keyframes periodPulse {
+    0%   { opacity: 0.4; transform: scale(1); }
+    60%  { opacity: 1;   transform: scale(1.22); }
+    100% { opacity: 1;   transform: scale(1.18); }
+  }
+
+  /* Rodapé */
+  .site-footer {
+    text-align: center;
+    padding: 24px 40px;
+    font-size: 10px;
+    letter-spacing: 1.5px;
+    color: rgba(255,255,255,0.15);
+    text-transform: uppercase;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+  }
+  .site-footer svg { width: 10px; height: 10px; stroke: currentColor; fill: none; stroke-width: 2; opacity: 0.5; }
+
+  /* Blur no topo ao subir */
+  .scroll-blur {
+    position: fixed;
+    top: 0; left: 0; right: 0;
+    height: 160px;
+    backdrop-filter: blur(5px);
+    -webkit-backdrop-filter: blur(5px);
+    background: linear-gradient(180deg, rgba(5,5,8,0.75) 0%, rgba(5,5,8,0.4) 40%, transparent 100%);
+    mask-image: linear-gradient(180deg, black 0%, rgba(0,0,0,0.8) 35%, rgba(0,0,0,0.2) 75%, transparent 100%);
+    -webkit-mask-image: linear-gradient(180deg, black 0%, rgba(0,0,0,0.8) 35%, rgba(0,0,0,0.2) 75%, transparent 100%);
     pointer-events: none;
-    z-index: 0;
+    z-index: 100;
+    opacity: 0;
+    transition: opacity .3s ease;
   }
-  .hero::after {
-    content: '';
-    position: absolute;
-    inset: 0;
-    background: linear-gradient(180deg, transparent 60%, var(--bg) 100%);
-    pointer-events: none;
-    z-index: 1;
-  }
+  .scroll-blur.visible { opacity: 1; }
   .hero-content {
     position: relative;
     z-index: 2;
@@ -115,18 +171,23 @@
     background-clip: text;
   }
   .hero-sub {
-    font-size: 17px;
-    color: var(--text2);
-    font-weight: 400;
-    max-width: 480px;
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 22px;
+    font-weight: 300;
+    font-style: italic;
+    color: rgba(255,255,255,0.45);
+    letter-spacing: 2px;
+    text-transform: none;
+    max-width: 560px;
     margin: 0 auto 36px;
-    line-height: 1.6;
+    line-height: 1.5;
   }
   .hero-stats {
     display: flex;
     gap: 40px;
     justify-content: center;
     flex-wrap: wrap;
+    margin-top: 120px;
   }
   .hero-stat {
     display: flex;
@@ -165,55 +226,47 @@
      HEADER
   ══════════════════════════════ */
   header {
-    position: sticky;
-    top: 0;
+    position: fixed;
+    top: 32px;
+    left: 50%;
+    transform: translateX(-50%);
     z-index: 200;
-    background: rgba(5,5,8,0.8);
-    backdrop-filter: blur(24px);
-    -webkit-backdrop-filter: blur(24px);
-    border-bottom: 1px solid var(--border);
+    background: transparent;
+    transition: opacity .3s ease, transform .3s ease;
+    width: 100%;
+    max-width: 900px;
+    pointer-events: auto;
+  }
+  header.hidden {
+    opacity: 0;
+    transform: translateX(-50%) translateY(-12px);
+    pointer-events: none;
   }
   .header-inner {
-    max-width: 1440px;
-    margin: 0 auto;
-    padding: 0 40px;
-    height: 64px;
+    padding: 0 32px;
+    height: 52px;
     display: flex;
     align-items: center;
-    justify-content: space-between;
+    justify-content: center;
     gap: 24px;
+    position: relative;
   }
 
-  /* Logo */
-  .logo {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    text-decoration: none;
+  /* Global top gradient — always visible behind header and content */
+  .global-glow {
+    position: fixed;
+    top: 0; left: 0; right: 0; bottom: 0;
+    pointer-events: none;
+    z-index: 0;
+    overflow: hidden;
   }
-  .logo-mark {
-    width: 36px; height: 36px;
-    background: linear-gradient(135deg, #7c3aed 0%, #4f46e5 100%);
-    border-radius: 10px;
-    display: flex; align-items: center; justify-content: center;
-    font-size: 18px; font-weight: 900; color: #fff;
-    box-shadow: 0 0 24px rgba(124,58,237,0.4), inset 0 1px 0 rgba(255,255,255,0.15);
-    flex-shrink: 0;
-  }
-  .logo-text {
-    font-size: 20px;
-    font-weight: 800;
-    letter-spacing: -0.5px;
-    background: linear-gradient(135deg, #fff 30%, var(--accent2) 100%);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    background-clip: text;
-  }
-  .logo-sub {
-    font-size: 11px;
-    color: var(--text2);
-    font-weight: 500;
-    letter-spacing: 0.5px;
+  .global-glow::before {
+    content: '';
+    position: absolute;
+    top: -10%; left: 50%;
+    transform: translateX(-50%);
+    width: 120vw; height: 70vh;
+    background: radial-gradient(ellipse at 50% 0%, rgba(139,92,246,0.22) 0%, transparent 65%);
   }
 
   /* Nav tabs inside header */
@@ -225,23 +278,26 @@
   }
   .nav-tabs::-webkit-scrollbar { display:none; }
   .tab {
-    padding: 8px 16px;
+    padding: 8px 18px;
     border-radius: 8px;
     cursor: pointer;
-    color: var(--text2);
-    font-size: 13px;
-    font-weight: 500;
+    color: rgba(255,255,255,0.3);
+    font-size: 10px;
+    font-weight: 300;
     white-space: nowrap;
     transition: all .2s;
     border: 1px solid transparent;
-    letter-spacing: 0.1px;
+    letter-spacing: 1.4px;
+    text-transform: uppercase;
+    transform: scale(1);
   }
-  .tab:hover { color: var(--text); background: var(--bg3); }
+  .tab:hover { color: rgba(255,255,255,0.8); background: transparent; transform: scale(1.1); }
   .tab.active {
-    color: var(--accent2);
-    background: rgba(124,58,237,0.12);
-    border-color: rgba(124,58,237,0.25);
-    font-weight: 600;
+    color: #fff;
+    background: transparent;
+    border-color: transparent;
+    font-size: 11px;
+    transform: scale(1.22);
   }
 
   .header-right {
@@ -249,15 +305,22 @@
     align-items: center;
     gap: 12px;
     flex-shrink: 0;
+    position: absolute;
+    right: 12px;
   }
   .header-badge {
-    font-size: 11px;
-    color: var(--text2);
-    background: var(--bg3);
-    border: 1px solid var(--border);
-    padding: 5px 14px;
-    border-radius: 20px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 10px;
+    font-weight: 300;
+    letter-spacing: 1.5px;
+    color: rgba(255,255,255,0.25);
     white-space: nowrap;
+  }
+  .header-badge svg {
+    width: 11px; height: 11px;
+    opacity: 0.4;
   }
 
   /* ══════════════════════════════
@@ -265,13 +328,19 @@
   ══════════════════════════════ */
   main {
     padding: 40px;
+    padding-top: 90px;
     max-width: 1440px;
     margin: 0 auto;
     position: relative;
     z-index: 1;
   }
+  /* O Início tem o hero que já ocupa tudo, não precisa do padding-top extra */
+  #tab-overview {
+    padding-top: 0;
+  }
   .tab-panel { display:none; }
   .tab-panel.active { display:block; animation: fadeUp .35s cubic-bezier(.4,0,.2,1); }
+  #tab-overview .hero { margin: -40px -40px 0; }
 
   /* ══════════════════════════════
      STAT CARDS
@@ -281,60 +350,69 @@
     grid-template-columns: repeat(4, 1fr);
     gap: 16px;
     margin-bottom: 32px;
+    filter: blur(3px);
+    opacity: 0.5;
+    mask-image: linear-gradient(180deg, transparent 0%, black 60%);
+    -webkit-mask-image: linear-gradient(180deg, transparent 0%, black 60%);
+    transition: filter .4s, opacity .4s;
+  }
+  .stats-row.revealed {
+    filter: blur(0);
+    opacity: 1;
+    mask-image: none;
+    -webkit-mask-image: none;
   }
   @media (max-width:768px) { .stats-row { grid-template-columns: repeat(2,1fr); } }
 
   .stat-card {
-    background: var(--bg2);
-    border: 1px solid var(--border);
-    border-radius: 20px;
+    background: linear-gradient(135deg, rgba(255,255,255,0.07) 0%, rgba(124,58,237,0.08) 60%, rgba(124,58,237,0.04) 100%);
+    border: 1px solid rgba(255,255,255,0.1);
+    border-radius: 10px;
     padding: 24px 26px;
     position: relative;
     overflow: hidden;
     cursor: default;
-    transition: transform .25s, border-color .25s, box-shadow .25s;
+    transition: transform .25s, border-color .3s, box-shadow .3s;
   }
-  .stat-card::after {
-    content:'';
-    position:absolute;
-    inset:0;
-    background: linear-gradient(135deg, rgba(124,58,237,0.04) 0%, transparent 60%);
-    opacity:0;
-    transition: opacity .3s;
+  .stat-card:hover {
+    transform: translateY(-3px);
+    border-color: rgba(255,255,255,0.18);
+    box-shadow: 0 0 32px rgba(124,58,237,0.1), 0 8px 32px rgba(0,0,0,0.3);
   }
-  .stat-card:hover { transform:translateY(-4px); border-color:var(--border2); box-shadow:0 16px 48px rgba(124,58,237,0.1); }
-  .stat-card:hover::after { opacity:1; }
-
   .stat-icon-bg {
-    width: 40px; height: 40px;
-    border-radius: 12px;
+    width: 36px; height: 36px;
+    border-radius: 8px;
+    background: rgba(255,255,255,0.06);
+    border: 1px solid rgba(255,255,255,0.1);
     display: flex; align-items: center; justify-content: center;
-    font-size: 18px;
     margin-bottom: 16px;
+    color: rgba(255,255,255,0.8);
   }
+  .stat-icon-bg svg { width: 16px; height: 16px; stroke: currentColor; fill: none; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
   .stat-label {
-    font-size: 11px;
-    font-weight: 600;
-    color: var(--text2);
+    font-size: 10px;
+    font-weight: 500;
+    color: rgba(255,255,255,0.3);
     text-transform: uppercase;
-    letter-spacing: 1px;
-    margin-bottom: 6px;
+    letter-spacing: 1.5px;
+    margin-bottom: 8px;
   }
   .stat-value {
-    font-size: 36px;
-    font-weight: 900;
+    font-size: 34px;
+    font-weight: 800;
     line-height: 1;
     letter-spacing: -1px;
+    color: #fff;
   }
-  .stat-value.accent  { color: var(--accent2); }
-  .stat-value.green   { color: var(--green); }
-  .stat-value.blue    { color: #60a5fa; }
-  .stat-value.orange  { color: var(--orange); }
+  .stat-value.accent { color: #fff; }
+  .stat-value.gold   { color: #fff; }
   .stat-trend {
     margin-top: 10px;
-    font-size: 11px;
-    color: var(--text3);
-    font-weight: 500;
+    font-size: 10px;
+    color: rgba(255,255,255,0.2);
+    font-weight: 400;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
   }
 
   /* ══════════════════════════════
@@ -356,10 +434,15 @@
   @media (max-width:900px) { .two-col { grid-template-columns:1fr; } }
 
   .card {
-    background: var(--bg2);
-    border: 1px solid var(--border);
-    border-radius: 20px;
+    background: linear-gradient(135deg, rgba(255,255,255,0.07) 0%, rgba(124,58,237,0.08) 60%, rgba(124,58,237,0.04) 100%);
+    border: 1px solid rgba(255,255,255,0.1);
+    border-radius: 10px;
     padding: 26px;
+    transition: border-color .3s, box-shadow .3s;
+  }
+  .card:hover {
+    border-color: rgba(124,58,237,0.3);
+    box-shadow: 0 0 24px rgba(124,58,237,0.07);
   }
 
   /* ══════════════════════════════
@@ -370,10 +453,11 @@
   .bar-label { width:120px; font-size:12px; color:var(--text2); text-align:right; flex-shrink:0; font-weight:500; }
   .bar-track { flex:1; background:var(--bg4); border-radius:6px; height:22px; overflow:hidden; }
   .bar-fill {
-    height:100%; border-radius:6px;
+    height:100%; border-radius:4px;
     display:flex; align-items:center; padding-left:10px;
-    font-size:11px; font-weight:700; color:rgba(255,255,255,0.9);
+    font-size:10px; font-weight:600; color:rgba(255,255,255,0.7);
     min-width:28px;
+    background: linear-gradient(90deg, rgba(124,58,237,0.7) 0%, rgba(167,139,250,0.6) 100%) !important;
     transition: width .8s cubic-bezier(.4,0,.2,1);
   }
   .bar-count { width:30px; font-size:12px; color:var(--text3); font-weight:600; }
@@ -400,8 +484,11 @@
      BADGE
   ══════════════════════════════ */
   .badge {
-    display:inline-block; padding:3px 10px; border-radius:20px;
-    font-size:10px; font-weight:700; text-transform:uppercase; letter-spacing:0.5px;
+    display:inline-block; padding:3px 10px; border-radius:4px;
+    font-size:9px; font-weight:600; text-transform:uppercase; letter-spacing:1px;
+    background: rgba(124,58,237,0.12) !important;
+    color: rgba(167,139,250,0.9) !important;
+    border: 1px solid rgba(124,58,237,0.25) !important;
   }
 
   /* ══════════════════════════════
@@ -565,33 +652,37 @@
 </head>
 <body>
 
+<div class="global-glow"></div>
+<div class="scroll-blur"></div>
 <header>
   <div class="header-inner">
-    <div class="logo">
-      <div class="logo-mark">S</div>
-      <div class="logo-text">SPY SWIPE</div>
-    </div>
-
     <nav class="nav-tabs">
-      <div class="tab active" data-tab="overview">Visão Geral</div>
-      <div class="tab" data-tab="producers">Produtores</div>
+      <div class="tab active" data-tab="overview">Início</div>
+      <div class="tab" data-tab="producers">Players</div>
       <div class="tab" data-tab="niches">Nichos</div>
-      <div class="tab" data-tab="clickup">ClickUp Spy</div>
+      <div class="tab" data-tab="clickup">Spy Nativo</div>
       <div class="tab" data-tab="native">Native Swipe</div>
-      <div class="tab" data-tab="ads">Ads Swipe</div>
+      <div class="tab" data-tab="ads">Library Spy</div>
     </nav>
 
-    <div class="header-right">
-      <div class="header-badge" id="header-meta">Carregando...</div>
-    </div>
   </div>
 </header>
 
-<section class="hero">
+<main>
+
+  <!-- INÍCIO -->
+  <div class="tab-panel active" id="tab-overview">
+  <section class="hero">
+  <div class="hero-stats-glow"></div>
   <div class="hero-content">
-    <div class="hero-eyebrow">✦ Uso Interno · XMX Corp</div>
-    <h1 class="hero-title">SPY<span> SWIPE</span></h1>
-    <p class="hero-sub">Inteligência competitiva e análise de mercado nutra.</p>
+
+    <!-- Bloco 1: Título -->
+    <div class="hero-block-title">
+      <div class="hero-eyebrow">✦ SPY · XMX Corp Intelligence</div>
+      <h1 class="hero-title">SPY<span> SWIPE</span></h1>
+    </div>
+
+    <!-- Bloco 2: Destaques -->
     <div class="hero-stats">
       <div class="hero-stat">
         <div class="hero-stat-label">Nicho em Alta</div>
@@ -602,7 +693,7 @@
       <div class="hero-stat">
         <div class="hero-stat-label">Produto em Alta</div>
         <div class="hero-stat-val" id="hero-top-product">—</div>
-        <div class="hero-stat-count" id="hero-top-product-count">— Ofertas</div>
+        <div class="hero-stat-count" id="hero-top-product-count">— Registros</div>
       </div>
       <div class="hero-divider"></div>
       <div class="hero-stat">
@@ -617,36 +708,39 @@
         <div class="hero-stat-count" id="hero-top-producer-count">— Ofertas</div>
       </div>
     </div>
+
+    <!-- Bloco 3: Seletor de período -->
+    <div class="period-selector">
+      <div class="period-btn" data-period="semanal">Semanal</div>
+      <div class="period-btn active" data-period="mensal">Mensal</div>
+      <div class="period-btn" data-period="total">Total</div>
+    </div>
+
   </div>
 </section>
-
-<main>
-
-  <!-- VISÃO GERAL -->
-  <div class="tab-panel active" id="tab-overview">
     <div class="stats-row">
       <div class="stat-card">
-        <div class="stat-icon-bg" style="background:rgba(167,139,250,0.1)">📦</div>
+        <div class="stat-icon-bg"><svg viewBox="0 0 24 24"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/><polyline points="3.27 6.96 12 12.01 20.73 6.96"/><line x1="12" y1="22.08" x2="12" y2="12"/></svg></div>
         <div class="stat-label">Total Produtos</div>
         <div class="stat-value accent" id="stat-total-products">—</div>
         <div class="stat-trend">Native Swipe</div>
       </div>
       <div class="stat-card">
-        <div class="stat-icon-bg" style="background:rgba(16,185,129,0.1)">🎨</div>
+        <div class="stat-icon-bg"><svg viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M9 21V9"/></svg></div>
         <div class="stat-label">Total Criativos</div>
-        <div class="stat-value green" id="stat-total-creatives">—</div>
+        <div class="stat-value accent" id="stat-total-creatives">—</div>
         <div class="stat-trend">Criativos mapeados</div>
       </div>
       <div class="stat-card">
-        <div class="stat-icon-bg" style="background:rgba(96,165,250,0.1)">👁</div>
+        <div class="stat-icon-bg"><svg viewBox="0 0 24 24"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg></div>
         <div class="stat-label">Total Views</div>
-        <div class="stat-value blue" id="stat-total-views">—</div>
+        <div class="stat-value" id="stat-total-views">—</div>
         <div class="stat-trend">Visualizações acumuladas</div>
       </div>
       <div class="stat-card">
-        <div class="stat-icon-bg" style="background:rgba(245,158,11,0.1)">🏭</div>
-        <div class="stat-label">Produtores Mapeados</div>
-        <div class="stat-value orange" id="stat-producers">—</div>
+        <div class="stat-icon-bg"><svg viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg></div>
+        <div class="stat-label">Players Mapeados</div>
+        <div class="stat-value gold" id="stat-producers">—</div>
         <div class="stat-trend">Players ativos</div>
       </div>
     </div>
@@ -749,6 +843,10 @@
   </div>
 
 </main>
+<footer class="site-footer" id="footer-meta">
+  <svg viewBox="0 0 24 24"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg>
+  <span>Atualizado</span>
+</footer>
 
 <script src="data.js"></script>
 <script>
@@ -810,8 +908,44 @@
   const { nativeSwipe, clickup, producers, niches } = SWIPE_DATA;
 
   // ─── Header meta ──────────────────────────────────────────
-  document.getElementById('header-meta').textContent =
-    'Atualizado: ' + fmtDate(SWIPE_DATA.meta.updated);
+  (() => {
+    const d = new Date(SWIPE_DATA.meta.updated);
+    const dd = String(d.getDate()).padStart(2,'0');
+    const mm = String(d.getMonth()+1).padStart(2,'0');
+    const yy = String(d.getFullYear()).slice(2);
+    document.getElementById('footer-meta').innerHTML =
+      `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg><span>Atualizado · ${dd} ${mm} ${yy}</span>`;
+  })();
+
+  // ─── Reveal stats-row on scroll ───────────────────────────
+  (() => {
+    const row = document.querySelector('.stats-row');
+    if (!row) return;
+    const obs = new IntersectionObserver(([e]) => {
+      if (e.isIntersecting) { row.classList.add('revealed'); obs.disconnect(); }
+    }, { threshold: 0.15 });
+    obs.observe(row);
+  })();
+
+  // ─── Scroll blur top fade ─────────────────────────────────
+  (() => {
+    const el = document.querySelector('.scroll-blur');
+    window.addEventListener('scroll', () => {
+      el.classList.toggle('visible', window.scrollY > 40);
+    }, { passive: true });
+  })();
+
+  // ─── Hide/show header on scroll ───────────────────────────
+  (() => {
+    const hdr = document.querySelector('header');
+    let lastY = 0;
+    window.addEventListener('scroll', () => {
+      const y = window.scrollY;
+      if (y > lastY && y > 60) hdr.classList.add('hidden');
+      else hdr.classList.remove('hidden');
+      lastY = y;
+    }, { passive: true });
+  })();
 
   // ─── VISÃO GERAL ──────────────────────────────────────────
   const totalProducts = nativeSwipe.length;
@@ -824,41 +958,87 @@
   document.getElementById('stat-total-views').textContent = fmtNum(totalViews);
   document.getElementById('stat-producers').textContent = activeProducers;
 
-  // Hero 1 — Nicho em Alta (mais frequente no native swipe)
-  const nicheCounter = {};
-  nativeSwipe.forEach(p => { nicheCounter[p.niche] = (nicheCounter[p.niche] || 0) + 1; });
-  const topNicheEntry = Object.entries(nicheCounter).sort((a,b) => b[1]-a[1])[0];
-  if (topNicheEntry) {
-    document.getElementById('hero-top-niche').textContent = nicheInfo(topNicheEntry[0]).label || topNicheEntry[0];
-    document.getElementById('hero-top-niche-count').textContent = topNicheEntry[1] + ' Ofertas';
+  // ─── Hero stats com filtro de período ─────────────────────
+  function updateHeroStats(period) {
+    const now = Date.now();
+    const msMap = { semanal: 7 * 24 * 60 * 60 * 1000, mensal: 30 * 24 * 60 * 60 * 1000, total: Infinity };
+    const ms = msMap[period];
+
+    const inRange = t => t.addedAt && (ms === Infinity || now - new Date(t.addedAt).getTime() <= ms);
+
+    // Hero 1 — Nicho em Alta (native swipe, sem filtro de data pois não tem campo)
+    const nicheCounter = {};
+    nativeSwipe.forEach(p => {
+      const raw = p.niche.trim();
+      const key = raw.toLowerCase();
+      if (!nicheCounter[key]) nicheCounter[key] = { count: 0, label: nicheInfo(key).label || (raw.charAt(0).toUpperCase() + raw.slice(1)) };
+      nicheCounter[key].count++;
+    });
+    // somar clickup filtrado por período
+    clickup.filter(inRange).forEach(t => {
+      const raw = (t.niche || '').trim();
+      if (!raw) return;
+      const key = raw.toLowerCase();
+      if (!nicheCounter[key]) nicheCounter[key] = { count: 0, label: nicheInfo(key).label || (raw.charAt(0).toUpperCase() + raw.slice(1)) };
+      nicheCounter[key].count++;
+    });
+    const topNicheEntry = Object.entries(nicheCounter).sort((a,b) => b[1].count - a[1].count)[0];
+    if (topNicheEntry) {
+      document.getElementById('hero-top-niche').textContent = topNicheEntry[1].label;
+      document.getElementById('hero-top-niche-count').textContent = topNicheEntry[1].count + ' Ofertas';
+    }
+
+    // Hero 2 — Produto em Alta (clickup filtrado + native swipe)
+    const productCounter = {};
+    nativeSwipe.forEach(p => {
+      const key = p.product.trim().toLowerCase();
+      if (!productCounter[key]) productCounter[key] = { count: 0, label: p.product };
+      productCounter[key].count++;
+    });
+    clickup.filter(inRange).forEach(t => {
+      if (!t.product || t.product.trim() === '-' || t.product.trim() === '') return;
+      const key = t.product.trim().toLowerCase();
+      if (!productCounter[key]) productCounter[key] = { count: 0, label: t.product };
+      productCounter[key].count++;
+    });
+    const topProductEntry = Object.entries(productCounter).sort((a,b) => b[1].count - a[1].count)[0];
+    if (topProductEntry) {
+      document.getElementById('hero-top-product').textContent = topProductEntry[1].label;
+      document.getElementById('hero-top-product-count').textContent = topProductEntry[1].count + ' Registros';
+    }
+
+    // Hero 3 — Maior Oferta (native swipe, sem filtro)
+    const topSpend = [...nativeSwipe].sort((a,b) => b.maxViews - a.maxViews)[0];
+    if (topSpend) {
+      document.getElementById('hero-top-spend').textContent = fmtNum(topSpend.maxViews);
+      document.getElementById('hero-top-spend-name').textContent = topSpend.product;
+    }
+
+    // Hero 4 — Produtor Escalado (native swipe, sem filtro)
+    const producerCounter = {};
+    nativeSwipe.forEach(p => {
+      const pr = producerInfo(p.producer);
+      if (/desconhecido|unknown/i.test(pr.name)) return;
+      producerCounter[p.producer] = (producerCounter[p.producer] || 0) + 1;
+    });
+    const topProducerEntry = Object.entries(producerCounter).sort((a,b) => b[1]-a[1])[0];
+    if (topProducerEntry) {
+      document.getElementById('hero-top-producer').textContent = producerInfo(topProducerEntry[0]).name.split('/')[0].trim();
+      document.getElementById('hero-top-producer-count').textContent = topProducerEntry[1] + ' Ofertas';
+    }
   }
 
-  // Hero 2 — Produto em Alta (mais criativos no native swipe)
-  const topProduct = [...nativeSwipe].sort((a,b) => b.creativeCount - a.creativeCount)[0];
-  if (topProduct) {
-    document.getElementById('hero-top-product').textContent = topProduct.product;
-    document.getElementById('hero-top-product-count').textContent = topProduct.creativeCount + ' Criativos';
-  }
+  // Iniciar com mensal
+  updateHeroStats('mensal');
 
-  // Hero 3 — Maior Oferta (maior maxViews = maior gasto estimado)
-  const topSpend = [...nativeSwipe].sort((a,b) => b.maxViews - a.maxViews)[0];
-  if (topSpend) {
-    document.getElementById('hero-top-spend').textContent = fmtNum(topSpend.maxViews);
-    document.getElementById('hero-top-spend-name').textContent = topSpend.product;
-  }
-
-  // Hero 4 — Produtor Escalado (ignorando desconhecido)
-  const producerCounter = {};
-  nativeSwipe.forEach(p => {
-    const pr = producerInfo(p.producer);
-    if (/desconhecido|unknown/i.test(pr.name)) return;
-    producerCounter[p.producer] = (producerCounter[p.producer] || 0) + 1;
+  // Botões de período
+  document.querySelectorAll('.period-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('.period-btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      updateHeroStats(btn.dataset.period);
+    });
   });
-  const topProducerEntry = Object.entries(producerCounter).sort((a,b) => b[1]-a[1])[0];
-  if (topProducerEntry) {
-    document.getElementById('hero-top-producer').textContent = producerInfo(topProducerEntry[0]).name.split('/')[0].trim();
-    document.getElementById('hero-top-producer-count').textContent = topProducerEntry[1] + ' Ofertas';
-  }
 
   // Bar chart by niche
   const nicheCount = {};
