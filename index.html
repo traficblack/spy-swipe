@@ -562,10 +562,7 @@
   <div class="header-inner">
     <div class="logo">
       <div class="logo-mark">S</div>
-      <div>
-        <div class="logo-text">SPY SWIPE</div>
-        <div class="logo-sub">XMX Corp · Intelligence</div>
-      </div>
+      <div class="logo-text">SPY SWIPE</div>
     </div>
 
     <nav class="nav-tabs">
@@ -585,28 +582,28 @@
 
 <section class="hero">
   <div class="hero-content">
-    <div class="hero-eyebrow">✦ XMX Corp · Intelligence</div>
+    <div class="hero-eyebrow">✦ Uso Interno · XMX Corp</div>
     <h1 class="hero-title">SPY<span> SWIPE</span></h1>
-    <p class="hero-sub">Inteligência competitiva em tempo real para o mercado nutra. Monitore, analise e vença.</p>
+    <p class="hero-sub">Inteligência competitiva e análise de mercado nutra.</p>
     <div class="hero-stats">
       <div class="hero-stat">
-        <div class="hero-stat-val" id="hero-products">—</div>
-        <div class="hero-stat-label">Produtos</div>
+        <div class="hero-stat-val" id="hero-top-producer">—</div>
+        <div class="hero-stat-label">Produtor #1</div>
       </div>
       <div class="hero-divider"></div>
       <div class="hero-stat">
-        <div class="hero-stat-val" id="hero-views">—</div>
-        <div class="hero-stat-label">Total Views</div>
+        <div class="hero-stat-val" id="hero-total-offers">—</div>
+        <div class="hero-stat-label">Ofertas Capturadas</div>
       </div>
       <div class="hero-divider"></div>
       <div class="hero-stat">
-        <div class="hero-stat-val" id="hero-ads">—</div>
-        <div class="hero-stat-label">Ads Ativos</div>
+        <div class="hero-stat-val" id="hero-top-offer">—</div>
+        <div class="hero-stat-label">Maior Oferta</div>
       </div>
       <div class="hero-divider"></div>
       <div class="hero-stat">
-        <div class="hero-stat-val" id="hero-producers">—</div>
-        <div class="hero-stat-label">Produtores</div>
+        <div class="hero-stat-val" id="hero-researches">—</div>
+        <div class="hero-stat-label">Pesquisas (30d)</div>
       </div>
     </div>
   </div>
@@ -803,7 +800,7 @@
 
   // ─── Header meta ──────────────────────────────────────────
   document.getElementById('header-meta').textContent =
-    'Atualizado: ' + fmtDate(SWIPE_DATA.meta.updated) + ' · ' + SWIPE_DATA.meta.team;
+    'Atualizado: ' + fmtDate(SWIPE_DATA.meta.updated);
 
   // ─── VISÃO GERAL ──────────────────────────────────────────
   const totalProducts = nativeSwipe.length;
@@ -816,11 +813,29 @@
   document.getElementById('stat-total-views').textContent = fmtNum(totalViews);
   document.getElementById('stat-producers').textContent = activeProducers;
 
-  // Hero numbers
-  document.getElementById('hero-products').textContent = totalProducts;
-  document.getElementById('hero-views').textContent = fmtNum(totalViews);
-  document.getElementById('hero-producers').textContent = activeProducers;
-  document.getElementById('hero-ads').textContent = '—'; // será atualizado depois que ads carregar
+  // Hero — Produtor #1 (mais frequente no native swipe)
+  const producerCount = {};
+  nativeSwipe.forEach(p => { producerCount[p.producer] = (producerCount[p.producer] || 0) + 1; });
+  const topProducerId = Object.entries(producerCount).sort((a,b) => b[1]-a[1])[0]?.[0];
+  const topProducerName = topProducerId ? producerInfo(topProducerId).name.split('/')[0].trim() : '—';
+  document.getElementById('hero-top-producer').textContent = topProducerName;
+
+  // Hero — Total ofertas (native swipe + clickup não-backlog)
+  const totalOffers = nativeSwipe.length + clickup.filter(t => !/backlog/i.test(t.status || '')).length;
+  document.getElementById('hero-total-offers').textContent = totalOffers;
+
+  // Hero — Maior oferta (mais views no native swipe)
+  const topOffer = [...nativeSwipe].sort((a,b) => b.totalViews - a.totalViews)[0];
+  document.getElementById('hero-top-offer').textContent = topOffer ? topOffer.product : '—';
+
+  // Hero — Pesquisas nos últimos 30 dias (clickup não-backlog com addedAt nos últimos 30d)
+  const thirtyDaysAgo = Date.now() - 30 * 24 * 60 * 60 * 1000;
+  const recentResearches = clickup.filter(t => {
+    if (/backlog/i.test(t.status || '')) return false;
+    if (!t.addedAt) return false;
+    return new Date(t.addedAt).getTime() >= thirtyDaysAgo;
+  }).length;
+  document.getElementById('hero-researches').textContent = recentResearches || clickup.filter(t => !/backlog/i.test(t.status||'')).length;
 
   // Bar chart by niche
   const nicheCount = {};
