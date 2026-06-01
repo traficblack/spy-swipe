@@ -147,9 +147,16 @@
     text-transform: uppercase;
     letter-spacing: 0.8px;
   }
+  .hero-stat-count {
+    font-size: 11px;
+    color: var(--accent2);
+    font-weight: 600;
+    margin-top: 4px;
+    opacity: 0.8;
+  }
   .hero-divider {
     width: 1px;
-    height: 40px;
+    height: 50px;
     background: var(--border2);
     align-self: center;
   }
@@ -587,23 +594,27 @@
     <p class="hero-sub">Inteligência competitiva e análise de mercado nutra.</p>
     <div class="hero-stats">
       <div class="hero-stat">
-        <div class="hero-stat-val" id="hero-top-producer">—</div>
-        <div class="hero-stat-label">Produtor #1</div>
+        <div class="hero-stat-label">Nicho em Alta</div>
+        <div class="hero-stat-val" id="hero-top-niche">—</div>
+        <div class="hero-stat-count" id="hero-top-niche-count">— Ofertas</div>
       </div>
       <div class="hero-divider"></div>
       <div class="hero-stat">
-        <div class="hero-stat-val" id="hero-total-offers">—</div>
-        <div class="hero-stat-label">Ofertas Capturadas</div>
+        <div class="hero-stat-label">Produto em Alta</div>
+        <div class="hero-stat-val" id="hero-top-product">—</div>
+        <div class="hero-stat-count" id="hero-top-product-count">— Ofertas</div>
       </div>
       <div class="hero-divider"></div>
       <div class="hero-stat">
-        <div class="hero-stat-val" id="hero-top-offer">—</div>
         <div class="hero-stat-label">Maior Oferta</div>
+        <div class="hero-stat-val" id="hero-top-spend">—</div>
+        <div class="hero-stat-count" id="hero-top-spend-name">—</div>
       </div>
       <div class="hero-divider"></div>
       <div class="hero-stat">
-        <div class="hero-stat-val" id="hero-researches">—</div>
-        <div class="hero-stat-label">Pesquisas (30d)</div>
+        <div class="hero-stat-label">Produtor Escalado</div>
+        <div class="hero-stat-val" id="hero-top-producer">—</div>
+        <div class="hero-stat-count" id="hero-top-producer-count">— Ofertas</div>
       </div>
     </div>
   </div>
@@ -813,29 +824,41 @@
   document.getElementById('stat-total-views').textContent = fmtNum(totalViews);
   document.getElementById('stat-producers').textContent = activeProducers;
 
-  // Hero — Produtor #1 (mais frequente no native swipe)
-  const producerCount = {};
-  nativeSwipe.forEach(p => { producerCount[p.producer] = (producerCount[p.producer] || 0) + 1; });
-  const topProducerId = Object.entries(producerCount).sort((a,b) => b[1]-a[1])[0]?.[0];
-  const topProducerName = topProducerId ? producerInfo(topProducerId).name.split('/')[0].trim() : '—';
-  document.getElementById('hero-top-producer').textContent = topProducerName;
+  // Hero 1 — Nicho em Alta (mais frequente no native swipe)
+  const nicheCounter = {};
+  nativeSwipe.forEach(p => { nicheCounter[p.niche] = (nicheCounter[p.niche] || 0) + 1; });
+  const topNicheEntry = Object.entries(nicheCounter).sort((a,b) => b[1]-a[1])[0];
+  if (topNicheEntry) {
+    document.getElementById('hero-top-niche').textContent = nicheInfo(topNicheEntry[0]).label || topNicheEntry[0];
+    document.getElementById('hero-top-niche-count').textContent = topNicheEntry[1] + ' Ofertas';
+  }
 
-  // Hero — Total ofertas (native swipe + clickup não-backlog)
-  const totalOffers = nativeSwipe.length + clickup.filter(t => !/backlog/i.test(t.status || '')).length;
-  document.getElementById('hero-total-offers').textContent = totalOffers;
+  // Hero 2 — Produto em Alta (mais criativos no native swipe)
+  const topProduct = [...nativeSwipe].sort((a,b) => b.creativeCount - a.creativeCount)[0];
+  if (topProduct) {
+    document.getElementById('hero-top-product').textContent = topProduct.product;
+    document.getElementById('hero-top-product-count').textContent = topProduct.creativeCount + ' Criativos';
+  }
 
-  // Hero — Maior oferta (mais views no native swipe)
-  const topOffer = [...nativeSwipe].sort((a,b) => b.totalViews - a.totalViews)[0];
-  document.getElementById('hero-top-offer').textContent = topOffer ? topOffer.product : '—';
+  // Hero 3 — Maior Oferta (maior maxViews = maior gasto estimado)
+  const topSpend = [...nativeSwipe].sort((a,b) => b.maxViews - a.maxViews)[0];
+  if (topSpend) {
+    document.getElementById('hero-top-spend').textContent = fmtNum(topSpend.maxViews);
+    document.getElementById('hero-top-spend-name').textContent = topSpend.product;
+  }
 
-  // Hero — Pesquisas nos últimos 30 dias (clickup não-backlog com addedAt nos últimos 30d)
-  const thirtyDaysAgo = Date.now() - 30 * 24 * 60 * 60 * 1000;
-  const recentResearches = clickup.filter(t => {
-    if (/backlog/i.test(t.status || '')) return false;
-    if (!t.addedAt) return false;
-    return new Date(t.addedAt).getTime() >= thirtyDaysAgo;
-  }).length;
-  document.getElementById('hero-researches').textContent = recentResearches || clickup.filter(t => !/backlog/i.test(t.status||'')).length;
+  // Hero 4 — Produtor Escalado (ignorando desconhecido)
+  const producerCounter = {};
+  nativeSwipe.forEach(p => {
+    const pr = producerInfo(p.producer);
+    if (/desconhecido|unknown/i.test(pr.name)) return;
+    producerCounter[p.producer] = (producerCounter[p.producer] || 0) + 1;
+  });
+  const topProducerEntry = Object.entries(producerCounter).sort((a,b) => b[1]-a[1])[0];
+  if (topProducerEntry) {
+    document.getElementById('hero-top-producer').textContent = producerInfo(topProducerEntry[0]).name.split('/')[0].trim();
+    document.getElementById('hero-top-producer-count').textContent = topProducerEntry[1] + ' Ofertas';
+  }
 
   // Bar chart by niche
   const nicheCount = {};
