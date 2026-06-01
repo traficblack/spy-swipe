@@ -72,7 +72,7 @@
     align-items: center;
     justify-content: center;
     gap: 4px;
-    margin-top: 56px;
+    margin-top: 96px;
   }
   .period-btn {
     cursor: pointer;
@@ -84,7 +84,7 @@
     padding: 8px 18px;
     border: none;
     background: transparent;
-    transition: all .25s ease;
+    transition: all .3s cubic-bezier(.4,0,.2,1);
     transform: scale(1);
   }
   .period-btn:hover {
@@ -94,15 +94,25 @@
   .period-btn.active {
     color: #fff;
     font-size: 11px;
-    font-weight: 400;
-    transform: scale(1.18);
-    letter-spacing: 2px;
-    animation: periodPulse .35s cubic-bezier(.4,0,.2,1);
+    font-weight: 500;
+    transform: scale(1.28);
+    letter-spacing: 2.5px;
+    animation: periodPulse .4s cubic-bezier(.4,0,.2,1);
   }
   @keyframes periodPulse {
-    0%   { opacity: 0.4; transform: scale(1); }
-    60%  { opacity: 1;   transform: scale(1.22); }
-    100% { opacity: 1;   transform: scale(1.18); }
+    0%   { opacity: 0.3; transform: scale(1); }
+    60%  { opacity: 1;   transform: scale(1.32); }
+    100% { opacity: 1;   transform: scale(1.28); }
+  }
+
+  /* Animação de troca dos hero stats */
+  @keyframes statFadeIn {
+    from { opacity: 0; transform: translateY(2px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+  .hero-stat-val.animating,
+  .hero-stat-count.animating {
+    animation: statFadeIn .6s cubic-bezier(.22,1,.36,1);
   }
 
   /* Rodapé */
@@ -210,10 +220,10 @@
   }
   .hero-stat-count {
     font-size: 11px;
-    color: var(--accent2);
-    font-weight: 600;
+    color: rgba(255,255,255,0.3);
+    font-weight: 400;
     margin-top: 4px;
-    opacity: 0.8;
+    letter-spacing: 0.5px;
   }
   .hero-divider {
     width: 1px;
@@ -457,7 +467,7 @@
     display:flex; align-items:center; padding-left:10px;
     font-size:10px; font-weight:600; color:rgba(255,255,255,0.7);
     min-width:28px;
-    background: linear-gradient(90deg, rgba(124,58,237,0.7) 0%, rgba(167,139,250,0.6) 100%) !important;
+    background: linear-gradient(90deg, rgba(124,58,237,0.7) 0%, rgba(167,139,250,0.6) 100%);
     transition: width .8s cubic-bezier(.4,0,.2,1);
   }
   .bar-count { width:30px; font-size:12px; color:var(--text3); font-weight:600; }
@@ -486,9 +496,6 @@
   .badge {
     display:inline-block; padding:3px 10px; border-radius:4px;
     font-size:9px; font-weight:600; text-transform:uppercase; letter-spacing:1px;
-    background: rgba(124,58,237,0.12) !important;
-    color: rgba(167,139,250,0.9) !important;
-    border: 1px solid rgba(124,58,237,0.25) !important;
   }
 
   /* ══════════════════════════════
@@ -506,8 +513,12 @@
   .producer-dot { width:13px; height:13px; border-radius:50%; flex-shrink:0; }
   .producer-name { font-weight:700; font-size:15px; }
   .producer-count { margin-left:auto; color:var(--text2); font-size:11px; background:var(--bg4); padding:3px 10px; border-radius:10px; font-weight:600; }
-  .producer-body { padding:0 20px 18px; display:none; }
-  .producer-body.open { display:block; }
+  .producer-body { display: none; }
+  .producer-card:hover {
+    transform: translateY(-4px) scale(1.02);
+    border-color: var(--accent);
+    box-shadow: 0 12px 40px rgba(124,58,237,0.2);
+  }
   .producer-products { display:flex; flex-wrap:wrap; gap:6px; }
   .prod-chip {
     background:var(--bg3); border:1px solid var(--border);
@@ -515,6 +526,7 @@
     transition:all .15s;
   }
   .prod-chip:hover { border-color:var(--accent2); color:var(--accent3); }
+  .prod-chip.active { border-color:var(--accent); color:var(--accent2); background:rgba(124,58,237,0.15); }
 
   /* ══════════════════════════════
      FILTER / CONTROLS
@@ -641,6 +653,81 @@
   ::-webkit-scrollbar-thumb { background:var(--border2); border-radius:4px; }
 
   .empty { color:var(--text3); text-align:center; padding:60px; font-size:13px; }
+
+  /* ── Producer detail panel ── */
+  .producer-detail {
+    margin-top: 28px;
+    max-height: 0;
+    overflow: hidden;
+    opacity: 0;
+    transition: max-height .5s cubic-bezier(.4,0,.2,1), opacity .4s ease, margin .4s ease;
+  }
+  .producer-detail.open {
+    max-height: 2400px;
+    opacity: 1;
+  }
+  .producer-detail-inner {
+    border: 1px solid rgba(255,255,255,0.1);
+    border-radius: 14px;
+    background: linear-gradient(135deg, rgba(255,255,255,0.05) 0%, rgba(124,58,237,0.06) 100%);
+    padding: 28px;
+  }
+  .producer-detail-header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 24px;
+    padding-bottom: 18px;
+    border-bottom: 1px solid rgba(255,255,255,0.07);
+  }
+  .producer-detail-dot {
+    width: 12px; height: 12px; border-radius: 50%; flex-shrink: 0;
+  }
+  .producer-detail-name { font-size: 18px; font-weight: 700; }
+  .producer-detail-sub { margin-left: auto; font-size: 11px; color: var(--text2); letter-spacing: 1px; text-transform: uppercase; }
+  .producer-detail-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 20px;
+  }
+  @media (max-width: 900px) { .producer-detail-grid { grid-template-columns: 1fr; } }
+  .producer-detail-section { display: flex; flex-direction: column; gap: 10px; }
+  .producer-detail-section-title {
+    font-size: 10px; font-weight: 700; color: var(--text2);
+    text-transform: uppercase; letter-spacing: 1.5px; margin-bottom: 4px;
+  }
+  .pd-product-row {
+    display: flex; align-items: center; gap: 10px;
+    padding: 8px 12px; border-radius: 8px;
+    background: rgba(255,255,255,0.04);
+    border: 1px solid rgba(255,255,255,0.06);
+    transition: border-color .2s;
+  }
+  .pd-product-row:hover { border-color: rgba(124,58,237,0.3); }
+  .pd-rank { font-size: 10px; color: var(--text3); font-weight: 700; width: 14px; flex-shrink: 0; }
+  .pd-prod-name { font-size: 13px; font-weight: 600; flex: 1; }
+  .pd-prod-views { font-size: 11px; color: var(--accent2); font-weight: 700; }
+  .pd-prod-count { font-size: 10px; color: var(--text2); }
+  .pd-stat-box {
+    display: flex; flex-direction: column; gap: 4px;
+    padding: 14px 16px; border-radius: 10px;
+    background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.06);
+  }
+  .pd-stat-label { font-size: 10px; color: var(--text2); text-transform: uppercase; letter-spacing: 1px; }
+  .pd-stat-val { font-size: 22px; font-weight: 800; color: #fff; letter-spacing: -0.5px; }
+  .pd-stat-sub { font-size: 11px; color: var(--text2); }
+  .pd-niche-tag {
+    display: inline-flex; align-items: center; gap: 6px;
+    padding: 5px 12px; border-radius: 20px;
+    font-size: 11px; font-weight: 600;
+    border: 1px solid rgba(255,255,255,0.1);
+    background: rgba(255,255,255,0.04);
+  }
+  .pd-niche-dot { width: 6px; height: 6px; border-radius: 50%; }
+  .pd-status-row { display: flex; align-items: center; gap: 8px; font-size: 12px; }
+  .pd-status-dot { width: 7px; height: 7px; border-radius: 50%; flex-shrink: 0; }
+  .pd-status-label { flex: 1; color: #fff; }
+  .pd-status-count { color: var(--text2); font-weight: 600; }
 
   .kw-tag {
     display:inline-block;
@@ -771,6 +858,7 @@
   <div class="tab-panel" id="tab-producers">
     <div class="section-title" style="margin-bottom:16px">Produtores Mapeados</div>
     <div class="producer-grid" id="producer-grid"></div>
+    <div id="producer-detail" class="producer-detail"></div>
   </div>
 
   <!-- NICHOS -->
@@ -848,7 +936,7 @@
   <span>Atualizado</span>
 </footer>
 
-<script src="data.js"></script>
+<script src="data.js?v=2"></script>
 <script>
 (function() {
   // ─── Helpers ──────────────────────────────────────────────
@@ -947,6 +1035,17 @@
     }, { passive: true });
   })();
 
+  // ─── STATUS ORDER (definido antes de updateHeroStats) ─────
+  const STATUS_ORDER = [
+    { key: 'backlog',               label: 'Backlog',               color: '#7b7c8e' },
+    { key: 'em pesquisa',           label: 'Em Pesquisa',           color: '#7c3aed' },
+    { key: 'validação',             label: 'Validação',             color: '#3b82f6' },
+    { key: 'pesquisa recorrente',   label: 'Pesquisa Recorrente',   color: '#22c55e' },
+    { key: 'troca de pote enviada', label: 'Troca De Pote Enviada', color: '#14b8a6' },
+    { key: 'pausado',               label: 'Pausado',               color: '#f97316' },
+    { key: 'pesquisa realizada',    label: 'Pesquisa Realizada',    color: '#10b981' },
+  ];
+
   // ─── VISÃO GERAL ──────────────────────────────────────────
   const totalProducts = nativeSwipe.length;
   const totalCreatives = nativeSwipe.reduce((s, p) => s + p.creativeCount, 0);
@@ -983,9 +1082,23 @@
       nicheCounter[key].count++;
     });
     const topNicheEntry = Object.entries(nicheCounter).sort((a,b) => b[1].count - a[1].count)[0];
+    function animateStat(valId, countId, valText, countText) {
+      const valEl = document.getElementById(valId);
+      const countEl = document.getElementById(countId);
+      [valEl, countEl].forEach(el => { el.classList.remove('animating'); void el.offsetWidth; el.classList.add('animating'); });
+      valEl.textContent = valText;
+      countEl.textContent = countText;
+    }
+
+    function capitalize(str) {
+      if (!str) return str;
+      return str.charAt(0).toUpperCase() + str.slice(1);
+    }
+
     if (topNicheEntry) {
-      document.getElementById('hero-top-niche').textContent = topNicheEntry[1].label;
-      document.getElementById('hero-top-niche-count').textContent = topNicheEntry[1].count + ' Ofertas';
+      animateStat('hero-top-niche', 'hero-top-niche-count',
+        capitalize(topNicheEntry[1].label),
+        topNicheEntry[1].count + ' Ofertas');
     }
 
     // Hero 2 — Produto em Alta (clickup filtrado + native swipe)
@@ -1003,15 +1116,17 @@
     });
     const topProductEntry = Object.entries(productCounter).sort((a,b) => b[1].count - a[1].count)[0];
     if (topProductEntry) {
-      document.getElementById('hero-top-product').textContent = topProductEntry[1].label;
-      document.getElementById('hero-top-product-count').textContent = topProductEntry[1].count + ' Registros';
+      animateStat('hero-top-product', 'hero-top-product-count',
+        capitalize(topProductEntry[1].label),
+        topProductEntry[1].count + ' Registros');
     }
 
     // Hero 3 — Maior Oferta (native swipe, sem filtro)
     const topSpend = [...nativeSwipe].sort((a,b) => b.maxViews - a.maxViews)[0];
     if (topSpend) {
-      document.getElementById('hero-top-spend').textContent = fmtNum(topSpend.maxViews);
-      document.getElementById('hero-top-spend-name').textContent = topSpend.product;
+      animateStat('hero-top-spend', 'hero-top-spend-name',
+        fmtNum(topSpend.maxViews),
+        capitalize(topSpend.product));
     }
 
     // Hero 4 — Produtor Escalado (native swipe, sem filtro)
@@ -1023,9 +1138,13 @@
     });
     const topProducerEntry = Object.entries(producerCounter).sort((a,b) => b[1]-a[1])[0];
     if (topProducerEntry) {
-      document.getElementById('hero-top-producer').textContent = producerInfo(topProducerEntry[0]).name.split('/')[0].trim();
-      document.getElementById('hero-top-producer-count').textContent = topProducerEntry[1] + ' Ofertas';
+      animateStat('hero-top-producer', 'hero-top-producer-count',
+        capitalize(producerInfo(topProducerEntry[0]).name.split('/')[0].trim()),
+        topProducerEntry[1] + ' Ofertas');
     }
+
+    // Atualiza gráfico de status com clickup filtrado pelo período
+    renderStatusChart(clickup.filter(inRange));
   }
 
   // Iniciar com mensal
@@ -1049,13 +1168,16 @@
   const nicheChartEl = document.getElementById('niche-bar-chart');
   Object.entries(nicheCount).sort((a,b) => b[1]-a[1]).forEach(([niche, count]) => {
     const info = nicheInfo(niche);
+    const color = info.color || '#7b7c8e';
     const pct = Math.round((count / maxNicheCount) * 100);
     const row = document.createElement('div');
     row.className = 'bar-row';
     row.innerHTML = `
-      <div class="bar-label">${info.label || niche}</div>
-      <div class="bar-track"><div class="bar-fill" style="width:${pct}%;background:${info.color}">${count}</div></div>
-      <div class="bar-count">${count}</div>
+      <div class="bar-label" style="color:#fff;display:flex;align-items:center;gap:6px;justify-content:flex-end;white-space:nowrap">
+        <span style="width:7px;height:7px;border-radius:50%;background:${color};flex-shrink:0;display:inline-block"></span>${info.label || niche}
+      </div>
+      <div class="bar-track"><div class="bar-fill" style="width:${pct}%;background:linear-gradient(90deg,${color}22 0%,15%,${color}dd 100%)">${count}</div></div>
+      <div class="bar-count" style="color:#fff">${count}</div>
     `;
     nicheChartEl.appendChild(row);
   });
@@ -1076,26 +1198,323 @@
     top5tbody.appendChild(tr);
   });
 
-  // Status bar chart (ClickUp)
-  const statusCount = {};
-  clickup.forEach(t => { statusCount[t.status] = (statusCount[t.status] || 0) + 1; });
-  const maxStatus = Math.max(...Object.values(statusCount));
-  const statusChartEl = document.getElementById('status-bar-chart');
-  Object.entries(statusCount).sort((a,b) => b[1]-a[1]).forEach(([status, count]) => {
-    const color = statusColor(status);
-    const pct = Math.round((count / maxStatus) * 100);
-    const row = document.createElement('div');
-    row.className = 'bar-row';
-    row.innerHTML = `
-      <div class="bar-label" style="color:${color}">${status || '—'}</div>
-      <div class="bar-track"><div class="bar-fill" style="width:${pct}%;background:${color}">${count}</div></div>
-      <div class="bar-count">${count}</div>
-    `;
-    statusChartEl.appendChild(row);
-  });
+  // Status bar chart (ClickUp) — reativo ao período
+  function renderStatusChart(filtered) {
+    const statusChartEl = document.getElementById('status-bar-chart');
+    statusChartEl.innerHTML = '';
+    const statusCount = {};
+    filtered.forEach(t => {
+      const k = (t.status || '').toLowerCase().trim();
+      statusCount[k] = (statusCount[k] || 0) + 1;
+    });
+    const maxStatus = Math.max(...STATUS_ORDER.map(s => statusCount[s.key] || 0), 1);
+    STATUS_ORDER.forEach(({ key, label, color }) => {
+      const count = statusCount[key] || 0;
+      const pct = Math.round((count / maxStatus) * 100);
+      const row = document.createElement('div');
+      row.className = 'bar-row';
+      row.innerHTML = `
+        <div class="bar-label" style="color:#fff;display:flex;align-items:center;gap:6px;justify-content:flex-end;white-space:nowrap">
+          <span style="width:7px;height:7px;border-radius:50%;background:${color};flex-shrink:0;display:inline-block"></span>${label}
+        </div>
+        <div class="bar-track"><div class="bar-fill" style="width:${pct}%;background:linear-gradient(90deg,${color}22 0%,15%,${color}dd 100%)">${count > 0 ? count : ''}</div></div>
+        <div class="bar-count" style="color:${count > 0 ? '#fff' : 'var(--text3)'}">${count}</div>
+      `;
+      statusChartEl.appendChild(row);
+    });
+  }
+  renderStatusChart(clickup);
 
   // ─── PRODUTORES ───────────────────────────────────────────
   const producerGrid = document.getElementById('producer-grid');
+  const producerDetail = document.getElementById('producer-detail');
+  let activeProducerId = null;
+  let producerPeriod = 'mensal';
+
+  function getProducerInRange() {
+    const now = Date.now();
+    const msMap = { semanal: 7*24*60*60*1000, mensal: 30*24*60*60*1000, total: Infinity };
+    const ms = msMap[producerPeriod];
+    return t => t.addedAt && (ms === Infinity || now - new Date(t.addedAt).getTime() <= ms);
+  }
+
+  producerDetail.addEventListener('click', e => {
+    const btn = e.target.closest('#producers-period .period-btn');
+    if (!btn) return;
+    producerPeriod = btn.dataset.period;
+    if (activeProducerId) {
+      const p = producers.find(x => x.id === activeProducerId);
+      if (p) renderProducerDetail(p);
+    }
+  });
+
+  function renderProducerDetail(p) {
+    // XMX: cruza por nome do produto pois os dados não têm producer='xmx'
+    const xmxNames = p.id === 'xmx'
+      ? new Set(p.products.map(x => x.name.toLowerCase().trim()))
+      : null;
+
+    const swipeItems = xmxNames
+      ? nativeSwipe.filter(s => xmxNames.has(s.product.toLowerCase().trim()))
+      : nativeSwipe.filter(s => s.producer === p.id);
+
+    const cuItems = (xmxNames
+      ? clickup.filter(t => xmxNames.has((t.product||'').toLowerCase().trim()) || xmxNames.has((t.productoBlack||'').toLowerCase().trim()))
+      : clickup.filter(t => t.producer === p.id)
+    ).filter(getProducerInRange());
+
+    const prodMap = {};
+    swipeItems.forEach(s => {
+      const key = s.product.trim().toLowerCase();
+      if (!prodMap[key]) prodMap[key] = { name: s.product, totalViews: 0, creativeCount: 0, niche: s.niche };
+      prodMap[key].totalViews += s.totalViews;
+      prodMap[key].creativeCount += s.creativeCount;
+    });
+    const prodRanked = Object.values(prodMap).sort((a,b) => b.totalViews - a.totalViews);
+    const nicheSet = [...new Set(swipeItems.map(s => s.niche))];
+    const statusMap = {};
+    cuItems.forEach(t => { const k = (t.status||'').toLowerCase().trim(); statusMap[k] = (statusMap[k]||0)+1; });
+    const totalViews = swipeItems.reduce((s,x) => s+x.totalViews, 0);
+    const totalCreatives = swipeItems.reduce((s,x) => s+x.creativeCount, 0);
+    const topProduct = prodRanked[0];
+
+    // Último produto catalogado
+    const cuSorted = [...cuItems].sort((a,b) => new Date(b.addedAt) - new Date(a.addedAt));
+    const lastProduct = cuSorted[0];
+
+    // Produto mais catalogado (mais aparições no clickup)
+    const prodFreqMap = {};
+    cuItems.forEach(t => { if(t.product) prodFreqMap[t.product] = (prodFreqMap[t.product]||0)+1; });
+    const mostCataloged = Object.entries(prodFreqMap).sort((a,b)=>b[1]-a[1])[0];
+
+    // Nicho mais frequente (clickup)
+    const nicheMapCu = {};
+    cuItems.forEach(t => { if(t.niche) nicheMapCu[t.niche] = (nicheMapCu[t.niche]||0)+1; });
+    const topNicheCu = Object.entries(nicheMapCu).sort((a,b)=>b[1]-a[1])[0];
+
+    // Produtos únicos no clickup
+    const cuUniqueProds = [...new Set(cuItems.map(t=>t.product).filter(Boolean))];
+
+    // Produtos em pesquisa ativa
+    const activeProds = cuItems.filter(t => t.status && t.status.toLowerCase().includes('em pesquisa'));
+    const completedProds = cuItems.filter(t => t.status && (t.status.toLowerCase().includes('pesquisa realizada') || t.status.toLowerCase().includes('complete')));
+
+    // Tendência: tarefas por semana nos últimos 30 dias
+    const now = Date.now();
+    const last7 = cuItems.filter(t => t.addedAt && now - new Date(t.addedAt).getTime() <= 7*24*60*60*1000).length;
+    const last30 = cuItems.filter(t => t.addedAt && now - new Date(t.addedAt).getTime() <= 30*24*60*60*1000).length;
+
+    // Todos os clickup sem filtro de período para stats totais
+    const cuAllItems = p.id === 'xmx'
+      ? clickup.filter(t => xmxNames && (xmxNames.has((t.product||'').toLowerCase().trim()) || xmxNames.has((t.productoBlack||'').toLowerCase().trim())))
+      : clickup.filter(t => t.producer === p.id);
+
+    producerDetail.innerHTML = `
+      <div class="producer-detail-inner">
+
+        <!-- Header -->
+        <div class="producer-detail-header">
+          <div class="producer-detail-dot" style="background:${p.color}"></div>
+          <div class="producer-detail-name">${p.name}</div>
+          <div class="producer-detail-sub">${cuAllItems.length} ofertas no total</div>
+          <div class="period-selector" style="margin-top:0;gap:2px;margin-left:auto" id="producers-period">
+            <div class="period-btn${producerPeriod==='semanal'?' active':''}" data-period="semanal">Semanal</div>
+            <div class="period-btn${producerPeriod==='mensal'?' active':''}" data-period="mensal">Mensal</div>
+            <div class="period-btn${producerPeriod==='total'?' active':''}" data-period="total">Total</div>
+          </div>
+        </div>
+
+        <!-- Stat boxes topo -->
+        <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:20px">
+          <div class="pd-stat-box">
+            <span class="pd-stat-label">Ofertas Mapeadas</span>
+            <span class="pd-stat-val">${cuItems.length}</span>
+            <span class="pd-stat-sub">${last7} última semana · ${last30} último mês</span>
+          </div>
+          <div class="pd-stat-box">
+            <span class="pd-stat-label">Total Views (Native)</span>
+            <span class="pd-stat-val">${fmtNum(totalViews)}</span>
+            <span class="pd-stat-sub">${totalCreatives} criativos mapeados</span>
+          </div>
+          <div class="pd-stat-box">
+            <span class="pd-stat-label">Em Pesquisa Ativa</span>
+            <span class="pd-stat-val" style="color:#7c3aed">${activeProds.length}</span>
+            <span class="pd-stat-sub">${completedProds.length} pesquisas concluídas</span>
+          </div>
+          <div class="pd-stat-box">
+            <span class="pd-stat-label">Nicho Dominante</span>
+            <span class="pd-stat-val" style="font-size:16px">${topNicheCu ? (nicheInfo(topNicheCu[0]).label || topNicheCu[0]) : '—'}</span>
+            <span class="pd-stat-sub">${topNicheCu ? topNicheCu[1] + ' ofertas' : ''}</span>
+          </div>
+        </div>
+
+        <!-- Grid principal -->
+        <div class="producer-detail-grid">
+
+          <!-- Col 1: Produtos por views (native swipe) -->
+          <div class="producer-detail-section">
+            <div class="producer-detail-section-title">Top Produtos · Native Swipe</div>
+            ${prodRanked.length ? prodRanked.slice(0,8).map((pr,i) => `
+              <div class="pd-product-row">
+                <span class="pd-rank">${i+1}</span>
+                <span class="pd-prod-name">${pr.name}</span>
+                <span class="pd-prod-views">${fmtNum(pr.totalViews)}</span>
+                <span class="pd-prod-count">${pr.creativeCount} criat.</span>
+              </div>`).join('')
+            : '<div style="color:var(--text3);font-size:12px;padding:8px 0">Sem dados no Native Swipe</div>'}
+          </div>
+
+          <!-- Col 2: Info do ClickUp -->
+          <div class="producer-detail-section">
+            <div class="producer-detail-section-title">Última Atividade</div>
+            ${lastProduct ? `
+              <div class="pd-stat-box" style="margin-bottom:10px">
+                <span class="pd-stat-label">Último Produto Catalogado</span>
+                <span class="pd-stat-val" style="font-size:15px">${lastProduct.product || lastProduct.title}</span>
+                <span class="pd-stat-sub">${fmtDate(lastProduct.addedAt)} · ${lastProduct.niche||'—'}</span>
+              </div>
+              <div class="pd-stat-box" style="margin-bottom:16px">
+                <span class="pd-stat-label">Produto Mais Catalogado</span>
+                <span class="pd-stat-val" style="font-size:15px">${mostCataloged ? mostCataloged[0] : '—'}</span>
+                <span class="pd-stat-sub">${mostCataloged ? mostCataloged[1] + ' vezes catalogado' : ''}</span>
+              </div>` : '<div style="color:var(--text3);font-size:12px;padding:8px 0">Sem tarefas no período</div>'}
+
+            <div class="producer-detail-section-title" style="margin-top:4px">Nichos Cobertos</div>
+            <div style="display:flex;flex-wrap:wrap;gap:6px;margin-top:6px">
+              ${[...new Set([...nicheSet, ...Object.keys(nicheMapCu)])].map(n => {
+                const info = nicheInfo(n);
+                const cnt = nicheMapCu[n] || 0;
+                return `<span class="pd-niche-tag" title="${cnt} ofertas"><span class="pd-niche-dot" style="background:${info.color}"></span>${info.label||n}${cnt?` <span style="opacity:.5;font-size:9px">${cnt}</span>`:''}</span>`;
+              }).join('') || '<span style="color:var(--text3);font-size:12px">—</span>'}
+            </div>
+          </div>
+
+          <!-- Col 3: Status -->
+          <div class="producer-detail-section">
+            <div class="producer-detail-section-title">Status das Tarefas</div>
+            ${STATUS_ORDER.map(s => {
+              const count = statusMap[s.key]||0;
+              if(!count) return '';
+              const pct = Math.round(count / Math.max(cuItems.length,1) * 100);
+              return `<div class="pd-status-row" style="flex-direction:column;align-items:flex-start;gap:4px">
+                <div style="display:flex;align-items:center;gap:6px;width:100%">
+                  <span class="pd-status-dot" style="background:${s.color}"></span>
+                  <span class="pd-status-label">${s.label}</span>
+                  <span class="pd-status-count" style="margin-left:auto">${count}</span>
+                </div>
+                <div style="width:100%;height:3px;background:rgba(255,255,255,0.06);border-radius:2px">
+                  <div style="width:${pct}%;height:100%;background:linear-gradient(90deg,${s.color}44,${s.color}cc);border-radius:2px"></div>
+                </div>
+              </div>`;
+            }).filter(Boolean).join('') || '<div style="color:var(--text3);font-size:12px">Sem tarefas no período</div>'}
+
+            ${topProduct ? `
+            <div class="producer-detail-section-title" style="margin-top:14px">Produto em Alta</div>
+            <div class="pd-stat-box" style="margin-top:6px">
+              <span class="pd-stat-label">Maior Volume</span>
+              <span class="pd-stat-val" style="font-size:15px">${topProduct.name}</span>
+              <span class="pd-stat-sub">${fmtNum(topProduct.totalViews)} views · max ${fmtNum(topProduct.creativeCount)} criat.</span>
+            </div>` : ''}
+          </div>
+
+        </div>
+
+        <!-- Seletor de produtos -->
+        ${(() => {
+          const allProds = [...new Set(p.products.length ? p.products.map(x=>x.name) : cuUniqueProds)];
+          // Mapa produto → nicho
+          const prodNicheMap = {};
+          p.products.forEach(x => { if(x.niche) prodNicheMap[x.name] = x.niche; });
+          swipeItems.forEach(s => { if(!prodNicheMap[s.product]) prodNicheMap[s.product] = s.niche; });
+          // Nichos únicos dos produtos
+          const prodNiches = [...new Set(allProds.map(n => prodNicheMap[n]).filter(Boolean))];
+          return `
+          <div style="margin-top:24px;border-top:1px solid rgba(255,255,255,0.07);padding-top:20px">
+            <div class="producer-detail-section-title" style="margin-bottom:12px">Explorar Produtos (${allProds.length})</div>
+            ${prodNiches.length > 1 ? `
+            <div style="margin-bottom:12px" id="pd-niche-filters">
+              <select data-niche-select style="background:var(--bg3);border:1px solid rgba(255,255,255,0.1);color:var(--text);padding:7px 14px;border-radius:8px;font-size:12px;outline:none;font-family:'Inter',sans-serif;cursor:pointer;min-width:160px">
+                <option value="">Todos os nichos</option>
+                ${prodNiches.map(n => { const info=nicheInfo(n); return `<option value="${n}">${info.label||n}</option>`; }).join('')}
+              </select>
+            </div>` : ''}
+            <div style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:16px" id="pd-prod-chips">
+              ${allProds.map(name => {
+                const niche = prodNicheMap[name] || '';
+                return `<span class="prod-chip pd-prod-chip" style="cursor:pointer;font-size:11px" data-name="${name}" data-niche="${niche}">${name}</span>`;
+              }).join('')}
+            </div>
+            <div id="pd-prod-panel" style="display:none;background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.07);border-radius:10px;padding:18px"></div>
+          </div>`;
+        })()}
+
+      </div>`;
+
+    producerDetail.classList.add('open');
+    setTimeout(() => producerDetail.scrollIntoView({ behavior: 'smooth', block: 'nearest' }), 150);
+
+    // Filtro de nicho via select
+    const nicheSelect = producerDetail.querySelector('[data-niche-select]');
+    if (nicheSelect) {
+      nicheSelect.addEventListener('change', () => {
+        const niche = nicheSelect.value;
+        producerDetail.querySelectorAll('.pd-prod-chip').forEach(c => {
+          c.style.display = (!niche || c.dataset.niche === niche) ? '' : 'none';
+        });
+        document.getElementById('pd-prod-panel').style.display = 'none';
+      });
+    }
+
+    // Seletor de produto: click handler
+    producerDetail.querySelectorAll('.pd-prod-chip').forEach(chip => {
+      chip.addEventListener('click', () => {
+        producerDetail.querySelectorAll('.pd-prod-chip').forEach(c => c.classList.remove('active'));
+        chip.classList.add('active');
+        const name = chip.dataset.name;
+        const panel = document.getElementById('pd-prod-panel');
+        const swipe = nativeSwipe.filter(s => s.product.toLowerCase().trim() === name.toLowerCase().trim());
+        const cu = clickup.filter(t => (t.product||'').toLowerCase().trim() === name.toLowerCase().trim());
+        const totalV = swipe.reduce((s,x)=>s+x.totalViews,0);
+        const totalC = swipe.reduce((s,x)=>s+x.creativeCount,0);
+        const maxV = swipe.reduce((s,x)=>Math.max(s,x.maxViews||0),0);
+        const spend7d = swipe.reduce((s,x)=>s+(x.spend7d||0),0);
+        const lastCu = [...cu].sort((a,b)=>new Date(b.addedAt)-new Date(a.addedAt))[0];
+        const statusesCu = {};
+        cu.forEach(t=>{ const k=(t.status||'').toLowerCase().trim(); statusesCu[k]=(statusesCu[k]||0)+1; });
+        panel.style.display = 'block';
+        panel.innerHTML = `
+          <div style="display:flex;align-items:center;gap:10px;margin-bottom:16px">
+            <strong style="font-size:16px">${name}</strong>
+            ${lastCu ? `<span style="font-size:11px;color:var(--text2)">· visto em ${fmtDate(lastCu.addedAt)}</span>` : ''}
+          </div>
+          <div style="display:grid;grid-template-columns:repeat(5,1fr);gap:10px;margin-bottom:16px">
+            <div class="pd-stat-box"><span class="pd-stat-label">Total Views</span><span class="pd-stat-val">${fmtNum(totalV)}</span></div>
+            <div class="pd-stat-box"><span class="pd-stat-label">Criativos</span><span class="pd-stat-val">${totalC}</span></div>
+            <div class="pd-stat-box"><span class="pd-stat-label">Max Views</span><span class="pd-stat-val">${fmtNum(maxV)}</span></div>
+            <div class="pd-stat-box"><span class="pd-stat-label">Encontrado</span><span class="pd-stat-val">${cu.length}x</span></div>
+            <div class="pd-stat-box"><span class="pd-stat-label">Gasto 7d</span><span class="pd-stat-val" style="color:${spend7d>0?'#10b981':'var(--text3)'}">${spend7d>0?'$'+fmtNum(spend7d):'—'}</span></div>
+          </div>
+          ${Object.keys(statusesCu).length ? `
+          <div style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:14px">
+            ${STATUS_ORDER.map(s=>{ const c=statusesCu[s.key]||0; if(!c) return ''; return `<span style="display:inline-flex;align-items:center;gap:5px;font-size:11px;padding:4px 10px;border-radius:20px;background:${s.color}18;border:1px solid ${s.color}33;color:#fff"><span style="width:6px;height:6px;border-radius:50%;background:${s.color};display:inline-block"></span>${s.label} <strong>${c}</strong></span>`; }).filter(Boolean).join('')}
+          </div>` : ''}
+          ${swipe.length && swipe[0].links ? `
+          <div>
+            <div class="producer-detail-section-title" style="margin-bottom:8px">Links por Views</div>
+            <div class="link-list">
+              ${swipe.flatMap(s=>s.links).sort((a,b)=>b.views-a.views).slice(0,5).map(l=>`
+                <div class="link-item">
+                  <a href="${l.url}" target="_blank">${l.url.replace(/https?:\/\//,'').substring(0,45)}…</a>
+                  <span class="link-views">${fmtNum(l.views)}</span>
+                  <span class="link-date">${l.date}</span>
+                </div>`).join('')}
+            </div>
+          </div>` : ''}
+        `;
+      });
+    });
+  }
+
   producers.forEach(p => {
     const uniqueProds = [...new Set(p.products.map(x => x.name))];
     const card = document.createElement('div');
@@ -1112,11 +1531,17 @@
         </div>
       </div>
     `;
-    card.querySelector('.producer-header').addEventListener('click', () => {
-      const body = card.querySelector('.producer-body');
-      const isOpen = body.classList.contains('open');
-      body.classList.toggle('open', !isOpen);
-      card.classList.toggle('open', !isOpen);
+    card.addEventListener('click', () => {
+      if (activeProducerId === p.id) {
+        activeProducerId = null;
+        producerDetail.classList.remove('open');
+        document.querySelectorAll('.producer-card').forEach(c => c.classList.remove('open'));
+      } else {
+        activeProducerId = p.id;
+        document.querySelectorAll('.producer-card').forEach(c => c.classList.remove('open'));
+        card.classList.add('open');
+        renderProducerDetail(p);
+      }
     });
     producerGrid.appendChild(card);
   });
@@ -1268,7 +1693,7 @@
           <td>${nicheBadge(t.niche)}</td>
           <td>${t.productoBlack ? `<span style="color:var(--accent2)">${t.productoBlack}</span>` : '<span style="color:var(--text2)">—</span>'}</td>
           <td><span style="color:${pr.color}">${pr.name}</span></td>
-          <td><span class="status-dot" style="background:${statusColor(t.status)}"></span>${t.status || '—'}</td>
+          <td><span class="status-dot" style="background:${statusColor(t.status)}"></span>${(t.status || '—').split(' ').map(w => w.charAt(0).toUpperCase() + w.slice(1).toLowerCase()).join(' ')}</td>
           <td>${fmtDate(t.addedAt)}</td>
         `;
         tbody.appendChild(tr);
